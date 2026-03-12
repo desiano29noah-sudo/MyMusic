@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MyMusic</title>
+
+<script src="https://cdn.jsdelivr.net/npm/jsmediatags/dist/jsmediatags.min.js"></script>
+
+<style>
+
+:root {
+
+    --bg-color: #ffffff;
+
+    --text-color: #333;
+
+    --secondary-bg: #f0f0f0;
+
+    --accent-color: #007bff;
+
+}
+
+body.dark {
+
+    --bg-color: #121212;
+
+    --text-color: #f5f5f5;
+
+    --secondary-bg: #1f1f1f;
+
+    --accent-color: #1db954;
+
+}
+
+body{
+
+    font-family: Arial, sans-serif;
+
+    margin:0;
+
+    background: var(--bg-color);
+
+    color: var(--text-color);
+
+    display:flex;
+
+    justify-content:center;
+
+    height:100vh;
+
+}
+
+#container{
+
+    display:flex;
+
+    flex:1;
+
+    width:100%;
+
+    height:100%;
+
+}
+
+#playlist{
+
+    width:40%;
+
+    background: var(--secondary-bg);
+
+    padding:20px;
+
+    overflow-y:auto;
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+#playlist h1{
+
+    font-size:28px;
+
+    margin-bottom:15px;
+
+}
+
+#playlist button{
+
+    margin-bottom:10px;
+
+}
+
+.albumHeader{
+
+    font-weight:bold;
+
+    margin-top:10px;
+
+    margin-bottom:5px;
+
+    font-size:1.1em;
+
+    border-bottom:1px solid #ccc;
+
+    padding-bottom:3px;
+
+    cursor:pointer;
+
+}
+
+.fileItem{
+
+    display:flex;
+
+    align-items:center;
+
+    padding:6px;
+
+    cursor:pointer;
+
+    border-radius:5px;
+
+    margin-bottom:4px;
+
+}
+
+.fileItem img{
+
+    width:50px;
+
+    height:50px;
+
+    object-fit:cover;
+
+    margin-right:10px;
+
+    border-radius:5px;
+
+    background:#ccc;
+
+}
+
+.fileItem:hover{
+
+    background: rgba(0,0,0,0.05);
+
+}
+
+.fileItem.active{
+
+    background: rgba(0,123,255,0.2);
+
+}
+
+#currentSong{
+
+    width:60%;
+
+    padding:30px;
+
+    position:relative;
+
+    text-align:center;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:flex-start;
+
+    overflow-y:auto;
+
+}
+
+#cover{
+
+    width:300px;
+
+    height:300px;
+
+    object-fit:cover;
+
+    border-radius:15px;
+
+    background:#ddd;
+
+    margin:20px auto;
+
+}
+
+#songInfo{
+
+    font-weight:bold;
+
+    margin-top:15px;
+
+    font-size:1.4em;
+
+}
+
+#artistAlbum{
+
+    color:#666;
+
+    margin-bottom:15px;
+
+}
+
+button{
+
+    padding:10px 18px;
+
+    border:none;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    background: var(--accent-color);
+
+    color:white;
+
+    font-weight:bold;
+
+    transition:0.2s;
+
+}
+
+button:hover{
+
+    filter: brightness(85%);
+
+}
+
+#controls{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    margin-top:15px;
+
+}
+
+#progressContainer{
+
+    width: calc(100% - 60px);
+
+    max-width:500px;
+
+    margin: 15px auto;
+
+    background:#ddd;
+
+    height:8px;
+
+    border-radius:4px;
+
+    cursor:pointer;
+
+}
+
+#progress{
+
+    width:0%;
+
+    height:100%;
+
+    background: var(--accent-color);
+
+    border-radius:4px;
+
+}
+
+/* Mini player */
+
+#miniPlayer{
+
+    position:fixed;
+
+    bottom:20px;
+
+    right:20px;
+
+    width:300px;
+
+    padding:10px;
+
+    border-radius:15px;
+
+    box-shadow:0 8px 20px rgba(0,0,0,0.3);
+
+    background: var(--bg-color);
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    z-index:999;
+
+    display:none;
+
+}
+
+#miniPlayer #coverMini{
+
+    width:60px;
+
+    height:60px;
+
+    border-radius:10px;
+
+    object-fit:cover;
+
+    margin-bottom:5px;
+
+}
+
+#miniPlayer #songInfoMini{
+
+    font-weight:bold;
+
+    font-size:0.9em;
+
+    text-align:center;
+
+}
+
+#miniPlayer #controlsMini{
+
+    display:flex;
+
+    justify-content:center;
+
+    margin-top:5px;
+
+}
+
+#miniPlayer #progressContainerMini{
+
+    width:90%;
+
+    height:6px;
+
+    background:#ddd;
+
+    border-radius:3px;
+
+    cursor:pointer;
+
+    margin-top:5px;
+
+}
+
+#miniPlayer #progressMini{
+
+    width:0%;
+
+    height:100%;
+
+    background: var(--accent-color);
+
+    border-radius:3px;
+
+}
+
+#darkToggle{
+
+    position:absolute;
+
+    top:5px;
+
+    left:5px;
+
+    padding:5px 10px;
+
+    font-size:0.8em;
+
+    background: var(--accent-color);
+
+    color:white;
+
+    border-radius:5px;
+
+    cursor:pointer;
+
+}
+
+#miniToggleBtn{
+
+    position:absolute;
+
+    top:5px;
+
+    right:5px;
+
+    padding:5px 10px;
+
+    font-size:0.8em;
+
+    background: var(--accent-color);
+
+    color:white;
+
+    border-radius:5px;
+
+    cursor:pointer;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="container">
+
+<div id="playlist">
+
+<h1>MyMusic</h1>
+
+<button id="addSongBtn">➕ Add Song</button>
+
+<button id="addAlbumBtn">📁 Add Album</button>
+
+<button id="shuffleBtn">🔀 Shuffle Songs</button>
+
+<input type="file" id="fileInput" multiple accept=".mp3,audio/mpeg" style="display:none">
+
+<input type="file" id="folderInput" webkitdirectory directory multiple accept=".mp3,audio/mpeg" style="display:none">
+
+<div id="fileList"></div>
+
+</div>
+
+
+
+<div id="currentSong">
+
+<h1>Now Playing</h1>
+
+<img id="cover" src="https://cdn-icons-png.flaticon.com/512/727/727218.png">
+
+<div id="songInfo">No song playing</div>
+
+<div id="artistAlbum"></div>
+
+<div id="controls">
+
+<button id="prevBtn">⏮️</button>
+
+<button id="playPauseBtn">▶️</button>
+
+<button id="nextBtn">⏭️</button>
+
+</div>
+
+<div id="progressContainer">
+
+<div id="progress"></div>
+
+</div>
+
+<button id="miniToggleBtn">Mini Player</button>
+
+<button id="darkToggle">Dark Mode</button>
+
+<audio id="audioPlayer"></audio>
+
+</div>
+
+</div>
+
+
+
+<!-- Mini player -->
+
+<div id="miniPlayer">
+
+<img id="coverMini" src="https://cdn-icons-png.flaticon.com/512/727/727218.png">
+
+<div id="songInfoMini">No song playing</div>
+
+<div id="controlsMini">
+
+<button id="prevMini">⏮️</button>
+
+<button id="playPauseMini">▶️</button>
+
+<button id="nextMini">⏭️</button>
+
+</div>
+
+<div id="progressContainerMini">
+
+<div id="progressMini"></div>
+
+</div>
+
+</div>
+
+
+
+<script>
+
+const defaultCover = "https://cdn-icons-png.flaticon.com/512/727/727218.png";
+
+const addSongBtn = document.getElementById("addSongBtn");
+
+const addAlbumBtn = document.getElementById("addAlbumBtn");
+
+const shuffleBtn = document.getElementById("shuffleBtn");
+
+const fileInput = document.getElementById("fileInput");
+
+const folderInput = document.getElementById("folderInput");
+
+const audioPlayer = document.getElementById("audioPlayer");
+
+const songInfo = document.getElementById("songInfo");
+
+const artistAlbum = document.getElementById("artistAlbum");
+
+const fileList = document.getElementById("fileList");
+
+const cover = document.getElementById("cover");
+
+const prevBtn = document.getElementById("prevBtn");
+
+const nextBtn = document.getElementById("nextBtn");
+
+const playPauseBtn = document.getElementById("playPauseBtn");
+
+const progressContainer = document.getElementById("progressContainer");
+
+const progress = document.getElementById("progress");
+
+const miniPlayer = document.getElementById("miniPlayer");
+
+const coverMini = document.getElementById("coverMini");
+
+const songInfoMini = document.getElementById("songInfoMini");
+
+const prevMini = document.getElementById("prevMini");
+
+const nextMini = document.getElementById("nextMini");
+
+const playPauseMini = document.getElementById("playPauseMini");
+
+const progressContainerMini = document.getElementById("progressContainerMini");
+
+const progressMini = document.getElementById("progressMini");
+
+const miniToggleBtn = document.getElementById("miniToggleBtn");
+
+const darkToggle = document.getElementById("darkToggle");
+
+
+
+let playlist = [];
+
+let originalPlaylist = [];
+
+let isPlaying = false;
+
+let currentIndex = -1;
+
+let isShuffled = false;
+
+let albumQueue = [];
+
+let albumQueueIndex = 0;
+
+
+
+// Dark mode toggle
+
+darkToggle.addEventListener("click", ()=> document.body.classList.toggle("dark"));
+
+
+
+// Mini player toggle (only shows when button clicked)
+
+miniToggleBtn.addEventListener("click", ()=> miniPlayer.style.display = miniPlayer.style.display==="flex" ? "none" : "flex");
+
+
+
+// Buttons trigger file inputs
+
+addSongBtn.addEventListener("click", ()=> fileInput.click());
+
+addAlbumBtn.addEventListener("click", ()=> folderInput.click());
+
+
+
+// Shuffle toggle
+
+shuffleBtn.addEventListener("click", ()=>{
+
+    if(!playlist.length) return;
+
+    if(!isShuffled){
+
+        originalPlaylist = [...playlist];
+
+        for(let i=playlist.length-1;i>0;i--){
+
+            const j=Math.floor(Math.random()*(i+1));
+
+            [playlist[i],playlist[j]]=[playlist[j],playlist[i]];
+
+        }
+
+        isShuffled = true;
+
+        shuffleBtn.textContent = "🔀 Unshuffle Songs";
+
+    } else {
+
+        playlist = [...originalPlaylist];
+
+        isShuffled = false;
+
+        shuffleBtn.textContent = "🔀 Shuffle Songs";
+
+    }
+
+    updateList();
+
+    playSong(0);
+
+});
+
+
+
+// Import files/folders
+
+[fileInput, folderInput].forEach(input=>{
+
+    input.addEventListener("change", e=>{
+
+        const files = Array.from(e.target.files).sort((a,b)=> a.webkitRelativePath > b.webkitRelativePath ? 1 : -1);
+
+        files.forEach(file=>{
+
+            if(file.type==="audio/mpeg" || file.name.endsWith(".mp3")){
+
+                const url = URL.createObjectURL(file);
+
+                jsmediatags.read(file,{
+
+                    onSuccess: function(tag){
+
+                        const title = tag.tags.title || file.name;
+
+                        const artist = tag.tags.artist || "Unknown Artist";
+
+                        const album = tag.tags.album || extractAlbum(file.webkitRelativePath);
+
+                        let imageURL = "";
+
+                        if(tag.tags.picture){
+
+                            const byteArray = new Uint8Array(tag.tags.picture.data);
+
+                            const blob = new Blob([byteArray], {type:tag.tags.picture.format});
+
+                            imageURL = URL.createObjectURL(blob);
+
+                        }
+
+                        playlist.push({file,url,title,artist,album,cover:imageURL});
+
+                        updateList();
+
+                        if(currentIndex===-1) playSong(0);
+
+                    },
+
+                    onError: function(){
+
+                        playlist.push({file,url,title:file.name,artist:"Unknown Artist",album:extractAlbum(file.webkitRelativePath),cover:""});
+
+                        updateList();
+
+                        if(currentIndex===-1) playSong(0);
+
+                    }
+
+                });
+
+            }
+
+        });
+
+    });
+
+});
+
+
+
+function extractAlbum(path){
+
+    const parts = path.split("/");
+
+    return (parts.length>1)? parts[parts.length-2] : "Unknown Album";
+
+}
+
+
+
+function updateList(){
+
+    fileList.innerHTML="";
+
+    const albums = {};
+
+    playlist.forEach((song,index)=>{
+
+        if(!albums[song.album]) albums[song.album]=[];
+
+        albums[song.album].push({song,index});
+
+    });
+
+    Object.keys(albums).forEach(albumName=>{
+
+        const albumHeader = document.createElement("div");
+
+        albumHeader.className="albumHeader";
+
+        albumHeader.textContent=albumName;
+
+
+
+        // Play all songs in album on click
+
+        albumHeader.onclick = ()=>{
+
+            albumQueue = albums[albumName].map(a=>a.index);
+
+            albumQueueIndex = 0;
+
+            playSong(albumQueue[albumQueueIndex]);
+
+        };
+
+
+
+        fileList.appendChild(albumHeader);
+
+        albums[albumName].forEach(({song,index})=>{
+
+            const item = document.createElement("div");
+
+            item.className="fileItem";
+
+            item.innerHTML = `
+
+                <img src="${song.cover || defaultCover}">
+
+                <div>
+
+                    <div>${song.title}</div>
+
+                    <div style="font-size:0.85em;color:#666">${song.artist}</div>
+
+                </div>`;
+
+            item.onclick = ()=> playSong(index);
+
+            fileList.appendChild(item);
+
+        });
+
+    });
+
+}
+
+
+
+function playSong(index){
+
+    if(index<0 || index>=playlist.length) return;
+
+    const song = playlist[index];
+
+    audioPlayer.src = song.url;
+
+    audioPlayer.play();
+
+    isPlaying = true;
+
+    playPauseBtn.textContent = "⏸️";
+
+    playPauseMini.textContent = "⏸️";
+
+    songInfo.textContent = song.title;
+
+    artistAlbum.textContent = `${song.artist} - ${song.album}`;
+
+    cover.src = song.cover || defaultCover;
+
+    coverMini.src = song.cover || defaultCover;
+
+    songInfoMini.textContent = song.title;
+
+    currentIndex = index;
+
+    highlightCurrentSong();
+
+}
+
+
+
+function togglePlay(){
+
+    if(!playlist.length) return;
+
+    if(isPlaying){audioPlayer.pause();playPauseBtn.textContent="▶️";playPauseMini.textContent="▶️";}
+
+    else{audioPlayer.play();playPauseBtn.textContent="⏸️";playPauseMini.textContent="⏸️";}
+
+    isPlaying=!isPlaying;
+
+}
+
+playPauseBtn.addEventListener("click",togglePlay);
+
+playPauseMini.addEventListener("click",togglePlay);
+
+
+
+function nextSong(){playSong((currentIndex+1)%playlist.length);}
+
+function prevSong(){playSong((currentIndex-1+playlist.length)%playlist.length);}
+
+[nextBtn,nextMini].forEach(b=>b.addEventListener("click",nextSong));
+
+[prevBtn,prevMini].forEach(b=>b.addEventListener("click",prevSong));
+
+
+
+audioPlayer.addEventListener("timeupdate", ()=>{
+
+    if(audioPlayer.duration){
+
+        const percent = audioPlayer.currentTime/audioPlayer.duration*100;
+
+        progress.style.width = percent+"%";
+
+        progressMini.style.width = percent+"%";
+
+    }
+
+});
+
+[progressContainer,progressContainerMini].forEach(pc=>{
+
+    pc.addEventListener("click", e=>{
+
+        const rect = pc.getBoundingClientRect();
+
+        const clickX = e.clientX-rect.left;
+
+        audioPlayer.currentTime = (clickX/rect.width)*audioPlayer.duration;
+
+    });
+
+});
+
+
+
+// Handle song ended for album playback
+
+audioPlayer.addEventListener("ended", ()=>{
+
+    if(albumQueue.length){
+
+        albumQueueIndex++;
+
+        if(albumQueueIndex < albumQueue.length){
+
+            playSong(albumQueue[albumQueueIndex]);
+
+        } else {
+
+            albumQueue = [];
+
+            albumQueueIndex = 0;
+
+        }
+
+    } else {
+
+        nextSong();
+
+    }
+
+});
+
+
+
+document.addEventListener("keydown", e=>{
+
+    if(!playlist.length) return;
+
+    switch(e.code){
+
+        case "Space": e.preventDefault(); togglePlay(); break;
+
+        case "ArrowRight": e.preventDefault(); nextSong(); break;
+
+        case "ArrowLeft": e.preventDefault(); prevSong(); break;
+
+        case "ArrowUp": e.preventDefault(); audioPlayer.volume = Math.min(audioPlayer.volume+0.1,1); break;
+
+        case "ArrowDown": e.preventDefault(); audioPlayer.volume = Math.max(audioPlayer.volume-0.1,0); break;
+
+    }
+
+});
+
+
+
+function highlightCurrentSong(){
+
+    const items = fileList.querySelectorAll(".fileItem");
+
+    items.forEach((item,i)=> item.classList.toggle("active",i===currentIndex));
+
+}
+
+
+
+// Make mini-player draggable
+
+let isDragging=false, offsetX=0, offsetY=0;
+
+miniPlayer.addEventListener('mousedown', e=>{
+
+    isDragging = true;
+
+    offsetX = e.clientX - miniPlayer.offsetLeft;
+
+    offsetY = e.clientY - miniPlayer.offsetTop;
+
+    miniPlayer.style.cursor="grabbing";
+
+});
+
+document.addEventListener('mousemove', e=>{
+
+    if(isDragging){
+
+        miniPlayer.style.left = (e.clientX-offsetX)+"px";
+
+        miniPlayer.style.top = (e.clientY-offsetY)+"px";
+
+        miniPlayer.style.bottom="auto";
+
+        miniPlayer.style.right="auto";
+
+    }
+
+});
+
+document.addEventListener('mouseup', ()=>{isDragging=false; miniPlayer.style.cursor="grab";});
+
+miniPlayer.style.cursor="grab";
+
+miniPlayer.style.position="fixed";
+
+</script>
+
+</body>
+
+</html>
